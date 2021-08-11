@@ -72,6 +72,8 @@ class popPattern
         ];
 
         $fields = [
+            ['addHidden' => ['handler', 'Record']],
+            ['addHidden' => ['method', 'savePattern']],
             ['addTextField' => ['text', 'prefix', 'Awalan' . '*', 'BR', 'class="form-control" onkeyup="setPreview(this, 0)"', 'Isikan awalan']],
             ['addTextField' => ['text', 'suffix', 'Akhiran' . '*', 'I', 'class="form-control" onkeyup="setPreview(this, 1)"', 'Isikan akhiran']],
             ['addTextField' => ['text', 'numLong', 'Panjang nomor seri	' . '*', '5', 'class="form-control" onkeyup="setPreview(this, 2)"', 'Isikan Panjang nomor seri	']]

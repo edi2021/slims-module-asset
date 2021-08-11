@@ -63,4 +63,26 @@ class Parse
             }
         }
     }
+
+    public static function fetchKey(string $key)
+    {
+        $result = NULL;
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'POST':
+                if (isset($_POST[$key]))
+                {
+                    $result = $_POST[$key];
+                }
+                break;
+            
+            case 'GET':
+                if (isset($_GET[$key]))
+                {
+                    $result = $_GET[$key];
+                }
+                break;
+        }
+
+        return $result;
+    }
 }

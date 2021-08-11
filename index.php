@@ -28,6 +28,8 @@ require SIMBIO . 'simbio_GUI/table/simbio_table.inc.php';
 require SIMBIO . 'simbio_GUI/form_maker/simbio_form_table_AJAX.inc.php';
 require SIMBIO . 'simbio_GUI/paging/simbio_paging.inc.php';
 require SIMBIO . 'simbio_DB/datagrid/simbio_dbgrid.inc.php';
+require SIMBIO . 'simbio_DB/simbio_dbop.inc.php';
+require SIMBIO.'simbio_FILE/simbio_file_upload.inc.php';
 // helper
 require __DIR__ . DS . 'helper.php';
 // autoload
