@@ -35,6 +35,137 @@ class Record
         }
     }
 
+    private function saveItem(object $Builder, int $AssetId, int $NextNumber, array $Pattern, object $callback)
+    {
+        // Set Item
+        $Item = [];
+        
+        // set allowed data
+        $allowData = ['locationid','placedetail','source','orderdate','receivedate','idorder','invoice','invoicedate','agentid','price','pricecurrency'];
+
+        foreach ($allowData as $key) {
+            if (isset($_POST[$key]) && !empty($_POST[$key]))
+            {
+                $Item[$key] = $callback($_POST[$key]);
+            }
+        }
+
+        // Infor data
+        $Item['inputdate'] = date('Y-m-d H:i:s');
+        $Item['lastupdate'] = date('Y-m-d H:i:s');
+        $Item['uid'] = (int)$_SESSION['uid'];
+        $Item['assetid'] = $AssetId;
+
+        for ($i = ($NextNumber + 1); $i <= ($NextNumber + $_POST['totalItems']); $i++) { 
+            $Item['itemcode'] = $Pattern['data'][0] . sprintf('%0' . $Pattern['data'][2] . 'd', $i) . $Pattern['data'][1];
+            $Builder->insert('asset_item', $Item);
+            echo $Builder->getSQL();
+        }
+
+    }
+
+    private function saveData()
+    {
+        global $sysconf;
+
+        // Create builder and DB instance
+        $Dbs = DB::getInstance('mysqli');
+        $Builder = new Builder($Dbs);
+        $Data = [];
+
+        // Set data
+        $allowData = ['name','typeid','markid','authorizationid','notes'];
+
+        foreach ($allowData as $key) {
+            if (isset($_POST[$key]))
+            {
+                $Data[$key] = $Dbs->escape_string($_POST[$key]);
+            }
+        }
+
+        // upload process
+        if (isset($_FILES['image']) && $_FILES['image']['size'])
+        {
+            $NewName = str_replace(' ', '-', strtolower($_POST['name']));
+            $Upload = new Upload();
+            $Upload->setAllowableFormat($sysconf['allowed_images']);
+            $Upload->setMaxSize($sysconf['max_upload']*1024);
+            $Upload->setUploadDir(SB. 'images' . DS . 'docs');
+            $Process = $Upload->doUpload('image', $NewName);
+
+            if ($Process === UPLOAD_SUCCESS)
+            {
+                // let prepare to store data
+                $Data['image'] = $Upload->new_filename;
+                \Utility::jsAlert('Upload success');
+            }
+            else
+            {
+                \Utility::jsAlert('Galat : ' . $Upload->error);
+                exit;
+            }
+        }
+
+        // set id from options element
+        $Data['typeid'] = getOptionsId($Dbs, 'asset_type', str_replace('NEW:', '', $Data['typeid']));
+        $Data['markid'] = getOptionsId($Dbs, 'asset_mark', str_replace('NEW:', '', $Data['markid']));
+        $Data['authorizationid'] = getOptionsId($Dbs, 'asset_authorization', str_replace('NEW:', '', $Data['authorizationid']));
+
+        // set date data
+        $Data['inputdate'] = date('Y-m-d H:i:s');
+        $Data['lastupdate'] = date('Y-m-d H:i:s');
+        $Data['uid'] = (int)$_SESSION['uid'];
+
+        // Insert
+        $Insert = $Builder->insert('asset', $Data);
+
+        if (!empty($Builder->error))
+        {
+            \utility::jsAlert('Galat : '. $Builder->error);
+            exit;
+        }
+
+        // Set last insert id
+        $LastInsertId = $Builder->insert_id;
+
+        // Get pattern data
+        $Pattern = $Dbs->query("SELECT * FROM `setting`WHERE setting_name = 'assetPattern'");
+
+        if ($Pattern->num_rows)
+        {
+            $PatternData = json_decode($Pattern->fetch_assoc()['setting_value'], TRUE);
+            $PatternToUse = array_values(array_filter($PatternData, function($pattern){
+                if ($pattern['label'] === $_POST['itemCodePattern'])
+                {
+                    return true;
+                }
+            }));
+
+            if (count($PatternToUse))
+            {
+                self::saveItem($Builder, $LastInsertId, countPattern($Dbs, $PatternToUse[0]), $PatternToUse[0], function($mix) use($Dbs) {
+                    return $Dbs->escape_string($mix);
+                });
+
+                // Save file
+                if (isset($_SESSION['assetFile']) && count($_SESSION['assetFile']) > 0)
+                {
+                    foreach ($_SESSION['assetFile'] as $index => $data) {
+                        $Builder->insert('asset_meta_file', ['fileid' => $data['id'], 'assetid' => $LastInsertId, 'inputdate' => date('Y-m-d H:i:s')]);
+                    }
+                    // unset $_SESSION;
+                    unset($_SESSION['assetFile']);
+                }
+
+                \Utility::jsAlert('Data berhasil disimpan.');
+                simbioRedirect($_SERVER['PHP_SELF']);
+            }
+            exit;
+        }
+
+        \Utility::jsAlert('Data berhasil disimpan. Namun, item tidak karena pola belum dibuat.');
+    }
+
     private function savePattern()
     {
         $Dbs = DB::getInstance('mysqli');
@@ -133,6 +264,10 @@ class Record
         {
             \Utility::jsAlert('Galat : ' . $Builder->error);
         }
+    }
+
+    private function EditData()
+    {
     }
 
     public function run()

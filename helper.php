@@ -25,3 +25,51 @@ function isClassExists(string $className)
 {
    return class_exists('SLiMSAssetmanager\\' . basename($className));
 }
+
+function getOptionsId($dbs, $table, $criteria)
+{
+  $table = $dbs->escape_string($table);
+  $criteria = $dbs->escape_string($criteria);
+  
+  if (is_numeric($criteria))
+  {
+    return $criteria;
+  }
+
+  // run Query
+  $q = $dbs->query("select * from $table where name = '$criteria'");
+
+  // check
+  if ($q->num_rows === 0)
+  {
+    $date = date('Y-m-d H:i:s');
+    @$dbs->query("insert into $table set name = '$criteria', inputdate = '$date', lastupdate = '$date'");
+    return $dbs->insert_id;
+  }
+
+  // fetch data
+  $d = $q->fetch_assoc();
+  return $d['id'];
+}
+
+function countPattern($dbs, $Pattern)
+{
+  // set Regexp attribute
+  $Prefix = $Pattern['data'][0];
+  $Suffix = $Pattern['data'][1];
+  // set query
+  $q = $dbs->query("select count(itemcode) from asset_item where itemcode regexp '^$Prefix+[0-9]+$Suffix'");
+
+  return $q->fetch_row()[0];
+}
+
+function simbioRedirect(string $to, string $selector = '#mainContent')
+{
+  $HTML = <<<HTML
+    <script>
+      parent.$('{$selector}').simbioAJAX('{$to}')
+    </script>
+  HTML;
+
+  echo $HTML;
+}

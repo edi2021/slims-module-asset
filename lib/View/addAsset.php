@@ -32,7 +32,7 @@ class addAsset
             ->make();
     }
 
-    protected static function getOption(string $table)
+    protected static function getOptions(string $table)
     {
         $DB = DB::getInstance();
         $Table = str_replace(['\'', '"', '`'], '', $table);
@@ -91,18 +91,17 @@ class addAsset
 
         $formElement = [
             'codeList' => FE::selectList('itemCodePattern', self::getPattern(), '', 'class="form-control col"'),
-            'locationList' => FE::selectList('locationID', self::getRawOptions(__('Location'), 'location_id, location_name', 'mst_location'), '', 'class="form-control col-4"') . '</div>',
-            'itemSite' => FE::textField('text', 'itemSite', '', 'class="form-control col-4"') . '</div>',
-            'collType' => FE::selectList('collTypeID', self::getRawOptions(__('Collection Type'), 'coll_type_id, coll_type_name', 'mst_coll_type'), '', 'class="form-control col-4"') . '</div> ',
-            'itemStatus' => FE::selectList('itemStatusID', self::getRawOptions(__('Item Status'), 'item_status_id, item_status_name', 'mst_item_status'), '', 'class="form-control col-4"') . '</div> ',
+            'locationList' => FE::selectList('locationid', self::getRawOptions(__('Location'), 'location_id, location_name', 'mst_location'), '', 'class="form-control col-4"') . '</div>',
+            'itemSite' => FE::textField('text', 'placedetail', '', 'class="form-control col-4"') . '</div>',
+            'itemStatus' => FE::selectList('itemStatusID', [['1', 'Ada'], ['0', 'Di Hapus']], '', 'class="form-control col-4"') . '</div> ',
             'source' => FE::selectList('source', [['1', __('Buy')], ['2', __('Prize/Grant')]], '', 'class="form-control col-4"') . '</div> ',
-            'orderDate' => FE::dateField('orDate', date('Y-m-d'), 'class="form-control"') . '</div>',
-            'recvDate' => FE::dateField('recvDate', date('Y-m-d'), ' class="form-control col-12"') . '</div>',
-            'ordNo' => FE::textField('text', 'ordNo', '', 'class="form-control"') . '</div>',
+            'orderDate' => FE::dateField('orderdate', date('Y-m-d'), 'class="form-control"') . '</div>',
+            'recvDate' => FE::dateField('receivedate', date('Y-m-d'), ' class="form-control col-12"') . '</div>',
+            'ordNo' => FE::textField('text', 'idorder', '', 'class="form-control"') . '</div>',
             'invoice' => FE::textField('text', 'invoice', '', 'class="form-control col-4"') . '</div>',
-            'invoceDate' => FE::dateField('invcDate', date('Y-m-d'), ' class="form-control col-12"') . '</div>',
-            'supplier' => FE::selectList('supplierID', self::getRawOptions(__('Supplier'), 'supplier_id, supplier_name', 'mst_supplier'), '', 'class="form-control col-4"') . '</div> ',
-            'price' => FE::textField('text', 'price', '0', 'class="form-control col-3"') . FE::selectList('priceCurrency', $sysconf['currencies'], '', 'class="form-control col-2"') . '</div> ',
+            'invoceDate' => FE::dateField('invoicedate', date('Y-m-d'), ' class="form-control col-12"') . '</div>',
+            'supplier' => FE::selectList('agentid', self::getOptions('asset_agent'), '', 'class="form-control col-4"') . '</div> ',
+            'price' => FE::textField('text', 'price', '0', 'class="form-control col-3"') . FE::selectList('pricecurrency', $sysconf['currencies'], '', 'class="form-control col-2"') . '</div> ',
             'visibility' => 'makeVisible s-margin__bottom-1',
         ];
 
@@ -200,11 +199,13 @@ class addAsset
 
         // set fields
         $fields = [
+            ['addHidden' => ['handler', 'Record']],
+            ['addHidden' => ['method', 'saveData']],
             ['addTextField' => ['textarea', 'name', 'Nama Barang' . '*', '', 'rows="1" class="form-control"', 'Isikan nama barang yang hendak di record']],
-            ['addSelectList' => ['typeid', 'Jenis Barang', self::getOption('asset_type'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_type" data-src-cols="id:name"', 'Jenis barang']],
-            ['addSelectList' => ['markid', 'Merek', self::getOption('asset_mark'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_mark" data-src-cols="id:name"', 'Jenis barang']],
+            ['addSelectList' => ['typeid', 'Jenis Barang', self::getOptions('asset_type'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_type" data-src-cols="id:name"', 'Jenis barang']],
+            ['addSelectList' => ['markid', 'Merek', self::getOptions('asset_mark'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_mark" data-src-cols="id:name"', 'Jenis barang']],
             ['addAnything' => ['Nomor QR Code', self::setItems()]],
-            ['addSelectList' => ['authorizationid', 'Penguasaan', self::getOption('asset_type'), '', 'class="select form-control" style="width: 25%"', 'Jenis barang']],
+            ['addSelectList' => ['authorizationid', 'Penguasaan', self::getOptions('asset_authorization'), '', 'class="select2 form-control" style="width: 25%" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_authorization" data-src-cols="id:name"', 'Jenis barang']],
             ['addAnything' => ['Dokumen Terkait', self::attachment()]],
             ['addAnything' => ['Foto', self::image()]],
             ['addTextField' => ['textarea', 'notes', 'Keterangan' . '*', '', 'rows="1" style="height: 100px;" class="form-control"', 'Isikan keterangan yang hendak di record']]
