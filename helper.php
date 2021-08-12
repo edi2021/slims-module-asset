@@ -73,3 +73,8 @@ function simbioRedirect(string $to, string $selector = '#mainContent')
 
   echo $HTML;
 }
+
+function setData($Key, $Data)
+{
+  return (isset($Data[$Key])) ? $Data[$Key] : null;
+}

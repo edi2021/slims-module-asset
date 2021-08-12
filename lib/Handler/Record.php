@@ -35,6 +35,17 @@ class Record
         }
     }
 
+    private function EditData()
+    {
+        if (isClassExists('View\\' . basename($_POST['view'])))
+        {
+            // set view namespace
+            $View = 'SLiMSAssetmanager\View\\' . basename($_POST['view']);
+            // render
+            $View::render();
+        }
+    }
+
     private function saveItem(object $Builder, int $AssetId, int $NextNumber, array $Pattern, object $callback)
     {
         // Set Item
@@ -264,10 +275,6 @@ class Record
         {
             \Utility::jsAlert('Galat : ' . $Builder->error);
         }
-    }
-
-    private function EditData()
-    {
     }
 
     public function run()

@@ -73,14 +73,21 @@ $props = [
             'chbox_form_URL' => $_SERVER['PHP_SELF']
         ];
 
-$Grid = new Grid($dbs, $props, 5);
+$Grid = new Grid($dbs, $props, 20);
 $Grid->canEdit = true;
+
+// set callback
+function mutationZero($DB, $Data)
+{
+    return $Data[0] . '&handler=Record&method=EditData&view=editAsset';
+}   
 
 // Make Grid
 $Grid
     ->setTableSpec('asset')
     ->setColumn('id, name, image, lastupdate')
-    ->setCriteria('name')
+    ->setCriteria('name LIKE "%{keyword}%"', true)
+    ->mutation(0, 'callback{mutationZero}')
     ->make();
 
 // show search info

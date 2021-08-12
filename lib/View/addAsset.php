@@ -162,11 +162,11 @@ class addAsset
         return $item;
     }
 
-    protected static function attachment()
+    protected static function attachment($Data)
     {
         $visibility = 'makeVisible s-margin__bottom-1';
         $href = $_SERVER['PHP_SELF'] . '?handler=Modal&method=popUp&view=popAttach';
-        $iframeSrc = $_SERVER['PHP_SELF'] . '?handler=Iframe&method=list&view=listAttach';
+        $iframeSrc = $_SERVER['PHP_SELF'] . '?handler=Iframe&method=list&view=listAttach&id=' . setData('id', $Data);
         $label = __('Add Attachment');
         $titleLabel = __('File Attachments');
 
@@ -184,10 +184,10 @@ class addAsset
     }
 
     // set render
-    public static function render()
+    public static function render($Data = [])
     {
         // set Form instance
-        $Form = new Form('addAssetForm', $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'], 'post');
+        $Form = new Form('addAssetForm', $_SERVER['PHP_SELF'], 'post');
 
         // set prop
         $property = [
@@ -198,18 +198,25 @@ class addAsset
         ];
 
         // set fields
-        $fields = [
-            ['addHidden' => ['handler', 'Record']],
-            ['addHidden' => ['method', 'saveData']],
-            ['addTextField' => ['textarea', 'name', 'Nama Barang' . '*', '', 'rows="1" class="form-control"', 'Isikan nama barang yang hendak di record']],
-            ['addSelectList' => ['typeid', 'Jenis Barang', self::getOptions('asset_type'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_type" data-src-cols="id:name"', 'Jenis barang']],
-            ['addSelectList' => ['markid', 'Merek', self::getOptions('asset_mark'), '', 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_mark" data-src-cols="id:name"', 'Jenis barang']],
-            ['addAnything' => ['Nomor QR Code', self::setItems()]],
-            ['addSelectList' => ['authorizationid', 'Penguasaan', self::getOptions('asset_authorization'), '', 'class="select2 form-control" style="width: 25%" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_authorization" data-src-cols="id:name"', 'Jenis barang']],
-            ['addAnything' => ['Dokumen Terkait', self::attachment()]],
+        $generalFields = [
+            ['addTextField' => ['textarea', 'name', 'Nama Barang' . '*', setData('name', $Data), 'rows="1" class="form-control"', 'Isikan nama barang yang hendak di record']],
+            ['addSelectList' => ['typeid', 'Jenis Barang', self::getOptions('asset_type'), setData('typeid', $Data), 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_type" data-src-cols="id:name"', 'Jenis barang']],
+            ['addSelectList' => ['markid', 'Merek', self::getOptions('asset_mark'), setData('markid', $Data), 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_mark" data-src-cols="id:name"', 'Jenis barang']],
+            ['addAnything' => ['Nomor QR Code', self::setItems($Data)]],
+            ['addSelectList' => ['authorizationid', 'Penguasaan', self::getOptions('asset_authorization'), setData('authorizationid', $Data), 'class="select2 form-control" style="width: 25%" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_authorization" data-src-cols="id:name"', 'Jenis barang']],
+            ['addAnything' => ['Dokumen Terkait', self::attachment($Data)]],
             ['addAnything' => ['Foto', self::image()]],
-            ['addTextField' => ['textarea', 'notes', 'Keterangan' . '*', '', 'rows="1" style="height: 100px;" class="form-control"', 'Isikan keterangan yang hendak di record']]
+            ['addTextField' => ['textarea', 'notes', 'Keterangan' . '*', setData('notes', $Data), 'rows="1" style="height: 100px;" class="form-control"', 'Isikan keterangan yang hendak di record']]
         ];
+
+        // Hidden Fields
+        $hiddenFields = [
+            ['addHidden' => ['handler', 'Record']],
+            ['addHidden' => ['method', (count($Data)) ? 'updateData' : 'saveData']]
+        ];
+
+        // Mix in
+        $fields = array_merge($hiddenFields, $generalFields);
 
         // register property
         foreach ($property as $prop => $value) {

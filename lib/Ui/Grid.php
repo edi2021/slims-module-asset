@@ -3,7 +3,7 @@
  * @author Drajat Hasan
  * @email drajathasan20@gmail.com
  * @create date 2021-08-10 12:15:58
- * @modify date 2021-08-10 12:15:58
+ * @modify date 2021-08-12 09:43:55
  * @desc [description]
  */
 
@@ -73,6 +73,23 @@ class Grid extends \simbio_datagrid
             $msg = str_replace('{result->num_rows}', $this->num_rows, __('Found <strong>{result->num_rows}</strong> from your keywords'));
             echo '<div class="infoBox">' . $msg . ' : "' . htmlspecialchars($_GET['keywords']) . '"<div>' . __('Query took') . ' <b>' . $this->query_time . '</b> ' . __('second(s) to complete') . '</div></div>';
         }
+    }
+
+    public function mutation()
+    {
+        if (func_num_args() === 1)
+        {
+            foreach (func_get_args() as $argument) {
+                $this->modifyColumnContent($argument[0], $argument[1]);
+            }
+        }
+        else
+        {
+            $argument = func_get_args();
+            $this->modifyColumnContent($argument[0], $argument[1]);
+        }
+
+        return $this;
     }
 
     public function make()
