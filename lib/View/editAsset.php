@@ -22,7 +22,7 @@ class editAsset extends addAsset
     {
         $Builder = DB::getInstance();
 
-        $Data = $Builder->prepare('select id,name,typeid,markid,authorizationid,notes from asset where id = :id');
+        $Data = $Builder->prepare('select id,name,typeid,markid,authorizationid,notes,lastupdate from asset where id = :id');
         $Data->execute(['id' => $id]);
 
         return $Data->fetch(\PDO::FETCH_ASSOC);

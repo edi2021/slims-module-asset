@@ -35,6 +35,22 @@ class Record
         }
     }
 
+    private function deleteAsset()
+    {
+        $Builder = new Builder($Instance = DB::getInstance('mysqli'));
+
+        if (isset($_POST['itemID']) && count($_POST['itemID']) > 0)
+        {
+            foreach ($_POST['itemID'] as $id) {
+                $id = substr($Instance->escape_string($id), 0,1);
+                $Builder->delete('asset', $id);
+            }
+
+            \utility::jsAlert('Data berhasil dihapus!');
+            simbioRedirect($_SERVER['PHP_SELF']);
+        }
+    }
+
     private function EditData()
     {
         if (isClassExists('View\\' . basename($_POST['view'])))
@@ -127,8 +143,18 @@ class Record
         $Data['lastupdate'] = date('Y-m-d H:i:s');
         $Data['uid'] = (int)$_SESSION['uid'];
 
+        // set action
+        $action = 'insert';
+        $Param = ['asset', $Data];
+        if (isset($_POST['id']))
+        {
+            $Id = $Dbs->escape_string($_POST['id']);
+            $action = 'update';
+            $Param = ['asset', $Data, 'id='.$Id];
+        }
+
         // Insert
-        $Insert = $Builder->insert('asset', $Data);
+        $Insert = call_user_func_array([$Builder, $action], $Param);
 
         if (!empty($Builder->error))
         {
@@ -137,12 +163,12 @@ class Record
         }
 
         // Set last insert id
-        $LastInsertId = $Builder->insert_id;
+        $LastInsertId = (isset($Data['id'])) ? $Dbs->escape_string($_POST['id']) : $Builder->insert_id;
 
         // Get pattern data
         $Pattern = $Dbs->query("SELECT * FROM `setting`WHERE setting_name = 'assetPattern'");
 
-        if ($Pattern->num_rows)
+        if ($Pattern->num_rows && (isset($_POST['totalItems']) && !empty($_POST['totalItems'])))
         {
             $PatternData = json_decode($Pattern->fetch_assoc()['setting_value'], TRUE);
             $PatternToUse = array_values(array_filter($PatternData, function($pattern){
@@ -161,6 +187,7 @@ class Record
                 // Save file
                 if (isset($_SESSION['assetFile']) && count($_SESSION['assetFile']) > 0)
                 {
+                    $Builder->delete('asset_meta_file', 'assetid='.(bool)$LastInsertId);
                     foreach ($_SESSION['assetFile'] as $index => $data) {
                         $Builder->insert('asset_meta_file', ['fileid' => $data['id'], 'assetid' => $LastInsertId, 'inputdate' => date('Y-m-d H:i:s')]);
                     }
@@ -174,7 +201,8 @@ class Record
             exit;
         }
 
-        \Utility::jsAlert('Data berhasil disimpan. Namun, item tidak karena pola belum dibuat.');
+        \Utility::jsAlert('Data berhasil disimpan.' . $Builder->getSQL());
+        simbioRedirect($_SERVER['PHP_SELF']);
     }
 
     private function savePattern()
@@ -256,12 +284,22 @@ class Record
             }
         }
 
+        $action = 'insert';
+        $Param = ['asset_file', $data];
+        if (isset($_POST['state']) && $_POST['state'] === 'edit' && !empty($_POST['id']))
+        {
+            $action = 'update';
+            $Param = ['asset_file', $data, "id=".(bool)$_POST['id']];
+        }
+
         // Store
-        $Insert = $Builder->insert('asset_file', $data);
+        $Process = call_user_func_array([$Builder, $action], $Param);
 
         if (empty($Builder->error))
         {
-            $_SESSION['assetFile'][] = ['id' => $Builder->insert_id, 'filename' => $Upload->new_filename];
+
+            if ($action === 'insert') $_SESSION['assetFile'][] = ['id' => $Builder->insert_id, 'filename' => $Upload->new_filename];
+
             \Utility::jsAlert('Data berhasil diupload dan disimpan');
             echo <<<HTML
                 <script>

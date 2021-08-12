@@ -74,7 +74,15 @@ function simbioRedirect(string $to, string $selector = '#mainContent')
   echo $HTML;
 }
 
-function setData($Key, $Data)
+function setData($Key, $Data, $Callback = '')
 {
-  return (isset($Data[$Key])) ? $Data[$Key] : null;
+  if (isset($Data[$Key]))
+  {
+     if (is_callable($Callback))
+     {
+       return $Callback($Data);
+     }
+
+     return $Data[$Key];
+  }
 }

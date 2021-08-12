@@ -10,6 +10,13 @@
 <style type="text/css">
   body { background: #FFFFFF; }
 </style>
+<script type="text/javascript" src="<?php echo JWB; ?>jquery.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>updater.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>form.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>gui.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>chosen/chosen.jquery.min.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>chosen/ajax-chosen.min.js"></script>
+<script type="text/javascript" src="<?php echo JWB; ?>colorbox/jquery.colorbox-min.js"></script>
 <?php if (isset($js)) { echo $js; } ?>
 </head>
 <body>

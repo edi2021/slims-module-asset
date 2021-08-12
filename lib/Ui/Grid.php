@@ -45,7 +45,7 @@ class Grid extends \simbio_datagrid
 
     public function setJoin(string $table, string $relatedColumn, string $type = '')
     {
-        $this->tableSpec += $this->tableSpec . ' ' . trim($type) . ' join ' . $table . ' ' . $relatedColumn;
+        $this->tableSpec = $this->tableSpec . ' ' . trim($type) . ' join ' . $table . ' on ' . $relatedColumn;
         return $this;
     }
 

@@ -32,12 +32,12 @@ require SIMBIO . 'simbio_DB/simbio_dbop.inc.php';
 require SIMBIO.'simbio_FILE/simbio_file_upload.inc.php';
 // helper
 require __DIR__ . DS . 'helper.php';
+require __DIR__ . DS . 'asset.helper.php';
 // autoload
 require __DIR__ . DS . 'autoload.php';
 // end dependency
 
 // call namespace
-use SLiMSAssetmanager\Ui\{Box,Grid};
 use SLiMSAssetmanager\Http\{Parse,Response};
 
 // privileges checking
@@ -53,45 +53,3 @@ $page_title = 'Asset';
 Parse::request('handler');
 
 /* End Action Area */
-
-// Set Box
-$Box = new Box($_SERVER['PHP_SELF'], 'GET');
-
-$Box
-    ->setTitle('Asset Perpustakaan')
-    ->setActionButton([
-            ['url' => $_SERVER['PHP_SELF'] . httpQuery(['handler' => 'Record', 'method' => 'addForm', 'view' => 'addAsset']), 'label' => 'Tambah Data', 'class' => 'btn btn-primary'],
-            ['url' => $_SERVER['PHP_SELF'], 'label' => 'Daftar Asset', 'class' => 'btn btn-default']
-        ])
-    ->make();
-
-// Set grid
-$props = [
-            'table_name' => 'TableOfContent',
-            'table_attr' => 'id="dataList" class="s-table table"',
-            'table_header_attr' => 'class="dataListHeader" style="font-weight: bold;"',
-            'chbox_form_URL' => $_SERVER['PHP_SELF']
-        ];
-
-$Grid = new Grid($dbs, $props, 20);
-$Grid->canEdit = true;
-
-// set callback
-function mutationZero($DB, $Data)
-{
-    return $Data[0] . '&handler=Record&method=EditData&view=editAsset';
-}   
-
-// Make Grid
-$Grid
-    ->setTableSpec('asset')
-    ->setColumn('id, name, image, lastupdate')
-    ->setCriteria('name LIKE "%{keyword}%"', true)
-    ->mutation(0, 'callback{mutationZero}')
-    ->make();
-
-// show search info
-$Grid->getSearchInfo();
-
-// get result grid
-$Grid->getResult();

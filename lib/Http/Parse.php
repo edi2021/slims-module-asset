@@ -29,28 +29,26 @@ class Parse
 
     private static function get($keys)
     {
-       if (isset($_GET[$keys]))
-       {
-           $handler = "SLiMSAssetmanager\Handler\\" . basename($_GET[$keys]);
+        if (isset($_GET[$keys]))
+        {
+            $handler = "SLiMSAssetmanager\Handler\\" . basename($_GET[$keys]);
 
-           if (class_exists($handler))
-           {
-               (new $handler($_GET))->run();
-               exit;
-           }
-       }
+            if (class_exists($handler))
+            {
+                (new $handler($_GET))->run();
+                exit;
+            }
+            exit('Handler not found!');
+        }
+
+        // Throw to view
+        self::view();
     }
 
     private static function post($keys)
     {
-        $_POST = (empty($_POST)) ? json_decode(file_get_contents('php://input'), TRUE) : $_POST;
-
-        if (isset($_POST['tableName']))
-        {
-            $getHandler = explode('::', trim($_POST['tableName']));
-            $_POST[$keys] = $getHandler[0];
-            $_POST['tableName'] = $getHandler[1];
-        }
+        // Set post condition for Mutation or other reason
+        postCondition($keys);
 
         if (isset($_POST[$keys]))
         {
@@ -61,7 +59,11 @@ class Parse
                 (new $handler($_POST))->run();
                 exit;
             }
+            exit('Handler not found!');
         }
+
+        // Throw to view
+        self::view();
     }
 
     public static function fetchKey(string $key)
@@ -84,5 +86,23 @@ class Parse
         }
 
         return $result;
+    }
+
+    private static function view()
+    {
+        if (isClassExists('View\\'.self::fetchKey('view')))
+        {
+            // Set view
+            $View = "SLiMSAssetmanager\View\\".basename(self::fetchKey('view'));
+            // Redering
+            $View::render();
+        }
+        else
+        {
+            // Default view
+            $View = "SLiMSAssetmanager\View\MainView";
+            // Rendering
+            $View::render();
+        }
     }
 }

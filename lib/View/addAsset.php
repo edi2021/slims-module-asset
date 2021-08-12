@@ -18,21 +18,28 @@ use SLiMSAssetmanager\Ui\Box;
 class addAsset
 {
     // set box
-    protected static function box()
+    private static function box($Form, $Data)
     {
         // Set Box
         $Box = new Box($_SERVER['PHP_SELF'], 'GET');
 
         $Box
-            ->setTitle('Asset Perpustakaan')
+            ->setTitle('Tambah Asset Perpustakaan')
             ->setActionButton([
                     ['url' => $_SERVER['PHP_SELF'] . httpQuery(['handler' => 'Record', 'method' => 'addForm', 'view' => 'addAsset']), 'label' => 'Tambah Data', 'class' => 'btn btn-primary'],
                     ['url' => $_SERVER['PHP_SELF'], 'label' => 'Daftar Asset', 'class' => 'btn btn-default']
                 ])
             ->make();
+
+        if ($Form->edit_mode)
+        {
+            echo '<div class="s-alert infoBox">'
+            . __('You are going to edit biblio data') . ' : <b>' . $Data['name'] . '</b>  <br />' . __('Last Updated') . '&nbsp;' . date('d F Y h:i:s', strtotime($Data['lastupdate']));
+            echo '</div>';
+        }
     }
 
-    protected static function getOptions(string $table)
+    private static function getOptions(string $table)
     {
         $DB = DB::getInstance();
         $Table = str_replace(['\'', '"', '`'], '', $table);
@@ -49,7 +56,7 @@ class addAsset
         return $Options;
     }
 
-    protected static function getRawOptions(string $label, string $column, string $table)
+    private static function getRawOptions(string $label, string $column, string $table)
     {
         $dbs = DB::getInstance('mysqli');
         $Table = str_replace(['\'', '"', '`'], '', $table);
@@ -83,7 +90,7 @@ class addAsset
         return $result;
     }
 
-    protected static function setItems()
+    private static function setItems()
     {
         global $sysconf;
         
@@ -162,7 +169,7 @@ class addAsset
         return $item;
     }
 
-    protected static function attachment($Data)
+    private static function attachment($Data)
     {
         $visibility = 'makeVisible s-margin__bottom-1';
         $href = $_SERVER['PHP_SELF'] . '?handler=Modal&method=popUp&view=popAttach';
@@ -178,7 +185,7 @@ class addAsset
         return $HTML;
     }
 
-    protected static function image()
+    private static function image()
     {
         return FE::textField('file', 'image', '');
     }
@@ -191,10 +198,11 @@ class addAsset
 
         // set prop
         $property = [
-            'submit_button_attr' => 'name="saveData" value="' . __('Save') . '" class="s-btn btn btn-default"',
+            'submit_button_attr' => 'name="saveData" value="' . ((count($Data)) ? __('Update') : __('Save')) . '" class="s-btn btn btn-default"',
             'table_attr' => 'id="dataList" cellpadding="0" cellspacing="0"',
             'table_header_attr' => 'class="alterCell"',
-            'table_content_attr' => 'class="alterCell2"'
+            'table_content_attr' => 'class="alterCell2"',
+            'edit_mode' => (bool)count($Data)
         ];
 
         // set fields
@@ -212,7 +220,8 @@ class addAsset
         // Hidden Fields
         $hiddenFields = [
             ['addHidden' => ['handler', 'Record']],
-            ['addHidden' => ['method', (count($Data)) ? 'updateData' : 'saveData']]
+            ['addHidden' => ['method', 'saveData']],
+            ['addHidden' => ['id', (count($Data)) ? $Data['id'] : 0]]
         ];
 
         // Mix in
@@ -231,7 +240,7 @@ class addAsset
         }
 
         // Set Box
-        self::box();
+        self::box($Form, $Data);
 
         // make form
         echo $Form->printOut();
