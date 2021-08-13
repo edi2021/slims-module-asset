@@ -12,6 +12,12 @@ function mutationZero($DB, $Data)
     return $Data[0] . '&handler=Record&method=EditData&view=editAsset';
 }
 
+function mutationZeroItem($DB, $Data)
+{
+    return $Data[0] . '&handler=Record&method=EditData&view=editItemAsset';
+}
+
+
 function mutationSetItemLabel($DB, $Data)
 {
     return '<b>' .$Data[2]. '</b>';
@@ -33,4 +39,12 @@ function postCondition($keys)
         $_POST[$keys] = 'Record';
         $_POST['method'] = 'delete' . $_POST['form_name'];
     }
+}
+
+function mutationCountItem($DB, $Data)
+{
+    $id = $DB->escape_string(substr($Data[0], 0,1));
+    $q = $DB->query('select count(itemcode) from asset_item where assetid = ' . $id);
+
+    return $q->fetch_row()[0];
 }

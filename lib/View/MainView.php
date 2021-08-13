@@ -9,11 +9,14 @@
 
 namespace SLiMSAssetmanager\View;
 
+use SLiMSAssetmanager\Ui\Components\BoxComponent;
 use SLiMSAssetmanager\Ui\{Box,Grid};
 use SLiMS\DB;
 
 class MainView
 {
+    use BoxComponent;
+    
     public static function render()
     {
         // Set Box
@@ -36,14 +39,14 @@ class MainView
                 ];
 
         $Grid = new Grid(DB::getInstance('mysqli'), $props, 20);
-        $Grid->canEdit = true;
 
         // Make Grid
         $Grid
             ->setTableSpec('asset')
-            ->setColumn('id, name, image, lastupdate')
+            ->setColumn('id, name as "Nama Barang", id as "Jumlah Item", lastupdate')
             ->setCriteria('name LIKE "%{keyword}%"', true)
             ->mutation(0, 'callback{mutationZero}')
+            ->mutation(2, 'callback{mutationCountItem}')
             ->make();
 
         // show search info

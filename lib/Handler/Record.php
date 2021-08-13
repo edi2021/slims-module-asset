@@ -35,6 +35,45 @@ class Record
         }
     }
 
+    private function updateItemData()
+    {
+        if (isset($_POST['id']) && empty($_POST['id']))
+        {
+            \utility::jsAlert('Request tidak valid!');
+            exit;
+        }
+
+        $Builder = new Builder($Instance = DB::getInstance('mysqli'));
+
+        // set allow data
+        $AllowData = ['locationid','placedetail','deleted','source','orderdate','receivedate','idorder','invoice','invoicedate','agentid','price','price'];
+
+        // Id
+        $Id = $Instance->escape_string($_POST['id']);
+
+        // Filtering
+        $Data = [];
+        foreach ($AllowData as $data) {
+            if (isset($_POST[$data]))
+            {
+                $Data[$data] = $Instance->escape_string($_POST[$data]);
+            }
+        }
+
+        $Data['lastupdate'] = date('Y-m-d H:i:s');
+        
+        $Update = $Builder->update('asset_item', $Data, 'id='.$Id);
+
+        if (empty($Builder->error))
+        {
+            \utility::jsAlert('Data berhasil diperbaharui');
+            simbioRedirect($_SERVER['PHP_SELF'] . '?view=itemList');
+            exit;
+        }
+
+        \utility::jsAlert('Data tidak berhasil di update : ' . $Builder->error);
+    }
+
     private function deleteAsset()
     {
         $Builder = new Builder($Instance = DB::getInstance('mysqli'));
@@ -68,7 +107,7 @@ class Record
         $Item = [];
         
         // set allowed data
-        $allowData = ['locationid','placedetail','source','orderdate','receivedate','idorder','invoice','invoicedate','agentid','price','pricecurrency'];
+        $allowData = ['locationid','placedetail','deleted','source','orderdate','receivedate','idorder','invoice','invoicedate','agentid','price','pricecurrency'];
 
         foreach ($allowData as $key) {
             if (isset($_POST[$key]) && !empty($_POST[$key]))
@@ -146,7 +185,7 @@ class Record
         // set action
         $action = 'insert';
         $Param = ['asset', $Data];
-        if (isset($_POST['id']))
+        if (isset($_POST['id']) && !empty($_POST['id']))
         {
             $Id = $Dbs->escape_string($_POST['id']);
             $action = 'update';
@@ -163,7 +202,7 @@ class Record
         }
 
         // Set last insert id
-        $LastInsertId = (isset($Data['id'])) ? $Dbs->escape_string($_POST['id']) : $Builder->insert_id;
+        $LastInsertId = (isset($Data['id'])) ? $Dbs->escape_string($_POST['id']) : $Dbs->escape_string($Builder->insert_id);
 
         // Get pattern data
         $Pattern = $Dbs->query("SELECT * FROM `setting`WHERE setting_name = 'assetPattern'");
@@ -183,25 +222,22 @@ class Record
                 self::saveItem($Builder, $LastInsertId, countPattern($Dbs, $PatternToUse[0]), $PatternToUse[0], function($mix) use($Dbs) {
                     return $Dbs->escape_string($mix);
                 });
-
-                // Save file
-                if (isset($_SESSION['assetFile']) && count($_SESSION['assetFile']) > 0)
-                {
-                    $Builder->delete('asset_meta_file', 'assetid='.(bool)$LastInsertId);
-                    foreach ($_SESSION['assetFile'] as $index => $data) {
-                        $Builder->insert('asset_meta_file', ['fileid' => $data['id'], 'assetid' => $LastInsertId, 'inputdate' => date('Y-m-d H:i:s')]);
-                    }
-                    // unset $_SESSION;
-                    unset($_SESSION['assetFile']);
-                }
-
-                \Utility::jsAlert('Data berhasil disimpan.');
-                simbioRedirect($_SERVER['PHP_SELF']);
             }
-            exit;
         }
 
-        \Utility::jsAlert('Data berhasil disimpan.' . $Builder->getSQL());
+        // Save file
+        if (isset($_SESSION['assetFile']) && count($_SESSION['assetFile']) > 0)
+        {
+            $Builder->delete('asset_meta_file', 'assetid='.$LastInsertId);
+            foreach ($_SESSION['assetFile'] as $index => $data) {
+                $Builder->insert('asset_meta_file', ['fileid' => $data['id'], 'assetid' => $LastInsertId, 'inputdate' => date('Y-m-d H:i:s')]);
+            }
+        }
+
+        // unset $_SESSION;
+        unset($_SESSION['assetFile']);
+
+        \Utility::jsAlert('Data berhasil disimpan.');
         simbioRedirect($_SERVER['PHP_SELF']);
     }
 
@@ -289,16 +325,22 @@ class Record
         if (isset($_POST['state']) && $_POST['state'] === 'edit' && !empty($_POST['id']))
         {
             $action = 'update';
-            $Param = ['asset_file', $data, "id=".(bool)$_POST['id']];
+            $Id = $Dbs->escape_string($_POST['id']);
+            $Param = ['asset_file', $data, "id=".$Id];
         }
 
         // Store
         $Process = call_user_func_array([$Builder, $action], $Param);
 
+        $LastId = ($_POST['state'] === 'edit') ? $Dbs->escape_string($_POST['id']) : $Builder->insert_id;
+
         if (empty($Builder->error))
         {
 
-            if ($action === 'insert') $_SESSION['assetFile'][] = ['id' => $Builder->insert_id, 'filename' => $Upload->new_filename];
+            // if (!isset($_SESSION['assetFile'][$LastId]))
+            // {
+                $_SESSION['assetFile'][$LastId] = ['id' => $LastId, 'filename' => $Upload->new_filename];
+            // }
 
             \Utility::jsAlert('Data berhasil diupload dan disimpan');
             echo <<<HTML

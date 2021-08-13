@@ -37,13 +37,18 @@ class listAttach
                 $result[] = ['filename' => $Data['name'], 'id' => $Data['id']];
             }
 
-            $_SESSION['assetFile'] = $result;
+            if ($State->rowCount() > 0)
+            {
+                $_SESSION['assetFile'] = $result;
+            }
         }
     }
 
     public static function render()
     {
         self::getData();
+
+        if (!isset($_SESSION['assetFile'])) exit;
 
         ob_start();
         $HTML = '<div class="w-full">';

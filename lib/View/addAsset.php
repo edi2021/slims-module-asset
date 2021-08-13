@@ -18,7 +18,7 @@ use SLiMSAssetmanager\Ui\Box;
 class addAsset
 {
     // set box
-    private static function box($Form, $Data)
+    protected static function box($Form, $Data)
     {
         // Set Box
         $Box = new Box($_SERVER['PHP_SELF'], 'GET');
@@ -39,7 +39,7 @@ class addAsset
         }
     }
 
-    private static function getOptions(string $table)
+    protected static function getOptions(string $table)
     {
         $DB = DB::getInstance();
         $Table = str_replace(['\'', '"', '`'], '', $table);
@@ -56,7 +56,7 @@ class addAsset
         return $Options;
     }
 
-    private static function getRawOptions(string $label, string $column, string $table)
+    protected static function getRawOptions(string $label, string $column, string $table)
     {
         $dbs = DB::getInstance('mysqli');
         $Table = str_replace(['\'', '"', '`'], '', $table);
@@ -72,7 +72,7 @@ class addAsset
         return $options;
     }
 
-    private static function getPattern()
+    protected static function getPattern()
     {
         $dbs = DB::getInstance();
         $Pattern = $dbs->query('select setting_value from `setting` where setting_name = "assetPattern"');
@@ -171,9 +171,15 @@ class addAsset
 
     private static function attachment($Data)
     {
+        $id = '';
+        if (!empty(setData('id', $Data)))
+        {
+            $id = '&id=' . setData('id', $Data);
+        }
+
         $visibility = 'makeVisible s-margin__bottom-1';
         $href = $_SERVER['PHP_SELF'] . '?handler=Modal&method=popUp&view=popAttach';
-        $iframeSrc = $_SERVER['PHP_SELF'] . '?handler=Iframe&method=list&view=listAttach&id=' . setData('id', $Data);
+        $iframeSrc = $_SERVER['PHP_SELF'] . '?handler=Iframe&method=list&view=listAttach' . $id;
         $label = __('Add Attachment');
         $titleLabel = __('File Attachments');
 
@@ -185,7 +191,7 @@ class addAsset
         return $HTML;
     }
 
-    private static function image()
+    protected static function image()
     {
         return FE::textField('file', 'image', '');
     }
@@ -193,6 +199,12 @@ class addAsset
     // set render
     public static function render($Data = [])
     {
+        // reset asset file
+        if (count($Data) === 0)
+        {
+            unset($_SESSION['assetFile']);
+        }
+
         // set Form instance
         $Form = new Form('addAssetForm', $_SERVER['PHP_SELF'], 'post');
 

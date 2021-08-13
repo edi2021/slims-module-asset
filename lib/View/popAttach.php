@@ -36,11 +36,6 @@ class popAttach
 
         $Data = self::getData();
 
-        if (!isset($_SESSION['assetFile']))
-        {
-            $_SESSION['assetFile'] = [];
-        }
-
         ob_start();
         // Set form instance
         $Form = new Form('itemForm', $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'], 'post');

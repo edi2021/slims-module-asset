@@ -36,6 +36,7 @@ class itemList
 
         $Grid = new Grid(DB::getInstance('mysqli'), $props, 20);
         $Grid->canEdit = true;
+        $Grid->setSQLCriteria('deleted = 0 ');
 
         // Make Grid
         $Grid
@@ -44,7 +45,8 @@ class itemList
                          a.name AS "Nama Aset", ai.locationid as "Lokasi", 
                          ai.lastupdate as "Terakhir Diperbaharui"')
             ->setJoin('asset as a', 'a.id = ai.assetid', 'inner')
-            ->setCriteria('ai.itemcode LIKE "%{keyword}%" or a.name LIKE "%{keyword}%"', true)
+            ->setCriteria(' and ai.itemcode LIKE "%{keyword}%" or a.name LIKE "%{keyword}%"', true)
+            ->mutation(0, 'callback{mutationZeroItem}')
             ->mutation(2, 'callback{mutationSetItemLabel}')
             ->make();
 

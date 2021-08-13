@@ -75,20 +75,9 @@ class Grid extends \simbio_datagrid
         }
     }
 
-    public function mutation()
+    public function mutation(int $column, string $callback)
     {
-        if (func_num_args() === 1)
-        {
-            foreach (func_get_args() as $argument) {
-                $this->modifyColumnContent($argument[0], $argument[1]);
-            }
-        }
-        else
-        {
-            $argument = func_get_args();
-            $this->modifyColumnContent($argument[0], $argument[1]);
-        }
-
+        $this->modifyColumnContent($column, $callback);
         return $this;
     }
 
