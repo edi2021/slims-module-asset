@@ -91,7 +91,7 @@ class Grid extends \simbio_datagrid
         // set criteria
         if (count($this->criteria))
         {
-            $this->setSQLCriteria(implode(' and ', $this->criteria));
+            $this->setSQLCriteria($this->sql_criteria . implode(' and ', $this->criteria));
         }
 
         $this->result = $this->createDataGrid($this->db, $this->tableSpec, $this->numToShow, $this->canEdit);

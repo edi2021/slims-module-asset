@@ -15,11 +15,17 @@ class Box
     private $buttons = [];
     private $formUrl;
     private $formMethod;
+    private $customField;
 
     public function __construct(string $formUrlAction, string $formMethod)
     {
         $this->formUrl = $formUrlAction;
         $this->formMethod = $formMethod;
+    }
+
+    public function setCustomField($rawHTML)
+    {
+        $this->customField = strip_tags($rawHTML, '<input><br><select><option><button>');
     }
 
     public function setTitle(string $title)
@@ -74,6 +80,7 @@ class Box
             <form name="search" action="{$this->formUrl}" id="search" method="get" class="form-inline">{$label}
                 <input type="text" name="keywords" class="form-control col-md-3"/>
                 <input type="submit" id="doSearch" value="{$label}"class="s-btn btn btn-default"/>
+                {$this->customField}
             </form>
         HTML; 
 

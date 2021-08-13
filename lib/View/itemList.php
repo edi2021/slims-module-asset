@@ -17,12 +17,18 @@ class itemList
     public static function render()
     {
         // Set Box
-        $Box = new Box($_SERVER['PHP_SELF'] . '?view=itemList', 'GET');
+        $isDeleteList = (isset($_GET['deleted']) ? '&deleted=true' : NULL);
+        $Box = new Box($_SERVER['PHP_SELF'] . '?view=itemList' . $isDeleteList, 'GET');
+
+        if (!is_null($isDeleteList))
+        {
+            $Box->setCustomField('<input type="hidden" name="deleted" value="true"/>');
+        }
 
         $Box
             ->setTitle('Item Asset Perpustakaan')
             ->setActionButton([
-                    ['url' => $_SERVER['PHP_SELF'] . '?view=itemList', 'label' => 'Daftar Item Asset', 'class' => 'btn btn-primary']
+                    ['url' => $_SERVER['PHP_SELF'] . '?view=itemList' . $isDeleteList, 'label' => 'Daftar Item Asset', 'class' => 'btn btn-primary']
                 ])
             ->make();
 
@@ -35,8 +41,12 @@ class itemList
                 ];
 
         $Grid = new Grid(DB::getInstance('mysqli'), $props, 20);
-        $Grid->canEdit = true;
-        $Grid->setSQLCriteria('deleted = 0 ');
+        $Grid->canEdit = (!is_null($isDeleteList) ? false : true);
+        $Grid->setSQLCriteria('deleted = ' . (!is_null($isDeleteList) ? 1 : 0));
+
+        if (!$Grid->canEdit) $Grid->invisible_fields = [0];
+
+        $Grid->debug = true;
 
         // Make Grid
         $Grid
@@ -45,7 +55,7 @@ class itemList
                          a.name AS "Nama Aset", ai.locationid as "Lokasi", 
                          ai.lastupdate as "Terakhir Diperbaharui"')
             ->setJoin('asset as a', 'a.id = ai.assetid', 'inner')
-            ->setCriteria(' and ai.itemcode LIKE "%{keyword}%" or a.name LIKE "%{keyword}%"', true)
+            ->setCriteria(' and (ai.itemcode LIKE "%{keyword}%" or a.name LIKE "%{keyword}%")', true)
             ->mutation(0, 'callback{mutationZeroItem}')
             ->mutation(2, 'callback{mutationSetItemLabel}')
             ->make();
