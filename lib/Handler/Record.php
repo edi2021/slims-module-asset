@@ -357,6 +357,389 @@ class Record
         }
     }
 
+    private function getDataById(object $db, int $id, string $tableName, string $column = '*')
+    {
+        $tableName = preg_replace('/[^a-zA-Z_]*/', '', $tableName);
+        $column = preg_replace('/[^a-zA-Z_,*]*/', '', $column);
+
+        $q = $db->prepare('select ' . $column . ' from '. $tableName . ' where id = :id');
+        $q->execute(['id' => $id]);
+
+        return ($q->rowCount()) ? $q->fetch(\PDO::FETCH_ASSOC) : 0;
+    }
+
+    private function getItemById(object $db, int $id)
+    {
+        $q = $db->prepare('select itemcode from asset_item where assetid = :id');
+        $q->execute(['id' => $id]);
+
+        $result = [];
+
+        while ($d = $q->fetch(\PDO::FETCH_NUM)) {
+            $result[] = $d[0];
+        }
+
+        return ($q->rowCount()) ? '<' . implode('><', $result) . '>' : null;
+    }
+
+    private function insertItemImport(object $Builder, int $assetid, string $data)
+    {
+        if (empty($data)) return;
+
+        $itemCodes = explode('><', trim(trim($data), '<>'));
+
+        foreach ($itemCodes as $Code) {
+            $Builder->insert('asset_item', ['itemcode' => $Code, 'assetid' => (int)$assetid]);
+        }
+    }
+
+    private function insertNewMasterData(string $table, string $value, string $raw = '', array $rawExecute = [])
+    {
+        $DB = DB::getInstance();
+        $tableName = preg_replace('/[^a-zA-Z_]*/', '', $table);
+
+        if (empty($raw))
+        {
+            $Insert = $DB->prepare('insert ignore into ' . $tableName . ' set name = :name, inputdate = :inputdate, lastupdate = :lastupdate');
+            $Insert->execute(['name' => $value, 'inputdate' => date('Y-m-d H:i:s'), 'lastupdate' => date('Y-m-d H:i:s')]);
+        }
+        else
+        {
+            $Insert = $DB->prepare('insert ignore into ' . $tableName . ' ' . $raw);
+            $Insert->execute($rawExecute);
+        }
+
+        return $DB->lastInsertId() ?? $value;
+    }
+
+    private function export()
+    {
+        // set PHP time limit
+        set_time_limit(0);
+        // set ob implicit flush
+        ob_implicit_flush();
+
+        // set db instances
+        $DB = DB::getInstance();
+
+        $q = $DB->query('select id, name as Nama,typeid as Tipe,markid as Merek,authorizationid as Kepemilikan, image as Gambar,notes as Keterangan,inputdate,lastupdate from asset');
+
+        if ($q->rowCount() < 1)
+        {
+            \utility::jsAlert('Tidak ada data yang dapat di eksport');
+            exit;
+        }
+        
+        // set header
+        header('Content-type: text/plain');
+        header('Content-Disposition: attachment; filename="asset_export.csv"');
+
+        // set character
+        $oc = $_POST['openclose'];
+        $sep = $_POST['separator'];
+
+        // processing data
+        $ColumnCount = 0;
+        $Data = '';
+        while ($d = $q->fetch(\PDO::FETCH_ASSOC))
+        {
+            if ($ColumnCount === 0)
+            {
+                $ColumnCount = count($d);
+            }
+
+            // Name
+            $Data .= $oc . $d['Nama'] . $oc . $sep;
+
+            // Tipe
+            $Data .= $oc;
+            $Data .= $this->getDataById($DB, $d['Tipe'], 'asset_type', 'name')['name'] ?? '?';
+            $Data .= $oc . $sep;
+           
+            // Tipe
+            $Data .= $oc;
+            $Data .= $this->getDataById($DB, $d['Merek'], 'asset_mark', 'name')['name'] ?? '?';
+            $Data .= $oc . $sep;
+
+            // Tipe
+            $Data .= $oc;
+            $Data .= $this->getDataById($DB, $d['Kepemilikan'], 'asset_authorization', 'name')['name'] ?? '?';
+            $Data .= $oc . $sep;
+
+            // Image
+            $Data .= $oc . $d['Gambar'] . $oc . $sep;
+            // Keterangan
+            $Data .= $oc . $d['Keterangan'] . $oc . $sep;
+            // Input Data
+            $Data .= $oc . $d['inputdate'] . $oc . $sep;
+            // Last Update
+            $Data .= $oc . $d['lastupdate'] . $oc . $sep;
+            // Item
+            $Data .= $oc . $this->getItemById($DB, $d['id']) . $oc . $sep;
+
+            $Data .= "\n";
+        }
+
+        // Field
+        $Column = '';
+        // set column name
+        for ($columnIdx=1; $columnIdx < $ColumnCount; $columnIdx++) { 
+            $Meta = $q->getColumnMeta($columnIdx);
+            $Column .= $oc . $Meta['name'] . $oc . $sep;
+        }
+        $Column = substr_replace($Column, "\n", -1);
+        $Data = substr_replace($Data, '', -1);
+
+        echo $Column . $Data;
+
+    }
+
+    private function exportItem()
+    {
+        // set PHP time limit
+        set_time_limit(0);
+        // set ob implicit flush
+        ob_implicit_flush();
+
+        // set db instances
+        $DB = DB::getInstance();
+
+        $q = $DB->query('select itemcode,locationid,placedetail,source,orderdate,receivedate,idorder,invoice,invoicedate,agentid,price,pricecurrency,inputdate,lastupdate from asset_item');
+
+        if ($q->rowCount() < 1)
+        {
+            \utility::jsAlert('Tidak ada data yang dapat di eksport');
+            exit;
+        }
+        
+        // set header
+        header('Content-type: text/plain');
+        header('Content-Disposition: attachment; filename="asset_item_export.csv"');
+
+        // set character
+        $oc = $_POST['openclose'];
+        $sep = $_POST['separator'];
+
+        // processing data
+        $ColumnCount = 0;
+        $Data = '';
+        while ($d = $q->fetch(\PDO::FETCH_ASSOC))
+        {
+            if ($ColumnCount === 0)
+            {
+                $ColumnCount = count($d);
+            }
+            
+            foreach ($d as $column => $value) {
+                if (in_array($column, ['source','agentid']))
+                {
+                    $Data .= $oc . ($this->getDataById($DB, $d[$column], 'asset_' . str_replace('id', '', $column), 'name')['name'] ?? '?') . $oc . $sep;
+                }
+                else
+                {
+                    $Data .= $oc . $value . $oc . $sep;
+                }
+            }
+
+            $Data .= "\n";
+        }
+
+        // Field
+        $Column = '';
+        // set column name
+        for ($columnIdx=0; $columnIdx < $ColumnCount; $columnIdx++) { 
+            $Meta = $q->getColumnMeta($columnIdx);
+            $Column .= $oc . $Meta['name'] . $oc . $sep;
+        }
+        $Column = substr_replace($Column, "\n", -1);
+        $Data = substr_replace($Data, '', -1);
+
+        echo $Column . $Data;
+
+    }
+
+    private function import()
+    {   
+        global $sysconf;
+        
+        // set PHP time limit
+        set_time_limit(0);
+        // set ob implicit flush
+        ob_implicit_flush();
+
+        $DB = DB::getInstance('mysqli');
+        $Builder = new Builder($DB);
+
+        // set character
+        $oc = $_POST['openclose'];
+        $sep = $_POST['separator'];
+
+        if (isset($_POST['upload']) && isset($_FILES['filetoupload']) AND $_FILES['filetoupload']['size'])
+        {
+            $tempDir = sys_get_temp_dir();
+            $Upload = new Upload();
+            $Upload->setAllowableFormat(['.csv']);
+            $Upload->setMaxSize($sysconf['max_upload']*1024);
+            $Upload->setUploadDir($tempDir);
+            $Proces = $Upload->doUpload('filetoupload');
+
+            if ($Proces != UPLOAD_SUCCESS)
+            {
+                \utility::jsAlert($Upload->error);
+                exit;
+            }
+
+            $uploadedFile = $tempDir.DS.$_FILES['filetoupload']['name'];
+
+            if (($handle = fopen($uploadedFile, "r")) !== FALSE) {
+                $index = 0;
+                $errorMsg = [];
+                while (($data = fgetcsv($handle, 1000, $sep)) !== FALSE) {
+                    if ($index > 0)
+                    {
+                        foreach ($data as $key => $value) {
+                            if (!empty($value))
+                            {
+                                $data[$key] = $DB->escape_string($value);
+                            }
+                            else
+                            {
+                                unset($data[$key]);
+                            }
+                        }
+    
+                        // prepare data to insert
+                        $cache = [];
+                        $cache['name'] = $data[0];
+                        $cache['typeid'] = $this->insertNewMasterData('asset_type', $data[1]);
+                        $cache['markid'] = $this->insertNewMasterData('asset_mark', $data[2]);
+                        $cache['authorizationid'] = $this->insertNewMasterData('asset_authorization', $data[3]);
+                        $cache['image'] = $data[4];
+                        $cache['notes'] = $data[5];
+                        $cache['inputdate'] = $data[6];
+                        $cache['lastupdate'] = date('Y-m-d H:i:s');
+                        $cache['uid'] = $_SESSION['uid'];
+
+                        $Insert = $Builder->insert('asset', $cache);
+
+                        if (empty($Builder->error))
+                        {
+                            // insert item first
+                            $this->insertItemImport($Builder, $Builder->insert_id, $data[8]);
+                        }
+                        else
+                        {
+                            $errorMsg[] = $Builder->error;
+                        }
+                    }
+                    $index++;
+                }
+
+                if (count($errorMsg) === 0)
+                {
+                    \utility::jsAlert('Data berhasil disimpan.');
+                }
+                else
+                {
+                    \utility::jsAlert(implode("\n", $errorMsg));
+                }
+                fclose($handle);
+            }
+
+        }
+    }
+
+    private function importItem()
+    {   
+        global $sysconf;
+        
+        // set PHP time limit
+        set_time_limit(0);
+        // set ob implicit flush
+        ob_implicit_flush();
+
+        $DB = DB::getInstance('mysqli');
+        $Builder = new Builder($DB);
+
+        // set character
+        $oc = $_POST['openclose'];
+        $sep = $_POST['separator'];
+
+        if (isset($_POST['upload']) && isset($_FILES['filetoupload']) AND $_FILES['filetoupload']['size'])
+        {
+            $tempDir = sys_get_temp_dir();
+            $Upload = new Upload();
+            $Upload->setAllowableFormat(['.csv']);
+            $Upload->setMaxSize($sysconf['max_upload']*1024);
+            $Upload->setUploadDir($tempDir);
+            $Proces = $Upload->doUpload('filetoupload');
+
+            if ($Proces != UPLOAD_SUCCESS)
+            {
+                \utility::jsAlert($Upload->error);
+                exit;
+            }
+
+            $uploadedFile = $tempDir.DS.$_FILES['filetoupload']['name'];
+
+            if (($handle = fopen($uploadedFile, "r")) !== FALSE) {
+                $index = 0;
+                $errorMsg = [];
+                while (($data = fgetcsv($handle, 1000, $sep)) !== FALSE) {
+                    if ($index > 0)
+                    {
+                        foreach ($data as $key => $value) {
+                            if (!empty($value))
+                            {
+                                $data[$key] = $DB->escape_string($value);
+                            }
+                            else
+                            {
+                                unset($data[$key]);
+                            }
+                        }
+                        
+                        // prepare data to insert
+                        $cache = [];
+                        $cache['locationid'] = (isset($data[1])) ? $this->insertNewMasterData('mst_location', $data[1], 'location_name = :name, input_date = :inputdate, last_update = :lastupdate', ['name' => $data[1], 'inputdate' => date('Y-m-d'), 'lastupdate' => date('Y-m-d')]) : null;
+                        $cache['source'] = $this->insertNewMasterData('asset_source', $data[3]);
+                        $cache['agentid'] = ($data[9] === '?' ) ? 1 : 2;
+                        $cache['placedetail'] = $data[2];
+                        $cache['orderdate'] = $data[4];
+                        $cache['receivedate'] = $data[5];
+                        $cache['idorder'] = $data[6];
+                        $cache['invoice'] = $data[7];
+                        $cache['invoicedate'] = $data[8];
+                        $cache['price'] = $data[10];
+                        $cache['pricecurrency'] = $data[11];
+                        $cache['inputdate'] = $data[12];
+                        $cache['lastupdate'] = date('Y-m-d H:i:s');
+                        $cache['uid'] = $_SESSION['uid'];
+
+                        $Insert = $Builder->update('asset_item', $cache, 'itemcode="' . $DB->escape_string($data[0]) . '"' );
+
+                        if (!empty($Builder->error))
+                        {
+                            $errorMsg[] = $Builder->error;
+                        }
+                    }
+                    $index++;
+                }
+
+                if (count($errorMsg) === 0)
+                {
+                    \utility::jsAlert('Data berhasil disimpan.');
+                }
+                else
+                {
+                    \utility::jsAlert(implode("\n", $errorMsg));
+                }
+                fclose($handle);
+            }
+
+        }
+    }
+
     public function run()
     {
         $Method = Parse::fetchKey('method');

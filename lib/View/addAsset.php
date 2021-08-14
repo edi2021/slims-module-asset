@@ -212,7 +212,7 @@ class addAsset
         $property = [
             'submit_button_attr' => 'name="saveData" value="' . ((count($Data)) ? __('Update') : __('Save')) . '" class="s-btn btn btn-default"',
             'table_attr' => 'id="dataList" cellpadding="0" cellspacing="0"',
-            'table_header_attr' => 'class="alterCell"',
+            'table_header_attr' => 'class="alterCell font-weight-bold"',
             'table_content_attr' => 'class="alterCell2"',
             'edit_mode' => (bool)count($Data)
         ];

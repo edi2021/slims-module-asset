@@ -16,7 +16,7 @@ function dd($mix, $exit = true)
   if ($exit) exit;
 }
 
-function httpQuery(array $data)
+function httpQuery(array $data = [])
 {
   return '?' . http_build_query(array_unique(array_merge($_GET, $data)));
 }

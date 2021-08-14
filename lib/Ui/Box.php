@@ -16,6 +16,7 @@ class Box
     private $formUrl;
     private $formMethod;
     private $customField;
+    public $disableForm = false;
 
     public function __construct(string $formUrlAction, string $formMethod)
     {
@@ -59,7 +60,7 @@ class Box
         $HTML .= '<div class="sub_section">';
 
         // Button
-        if (count($this->buttons))
+        if (count($this->buttons) && !$this->disableForm)
         {
             $HTML .= '<div class="btn-group">';
             
@@ -75,15 +76,18 @@ class Box
         }
 
         // Form
-        $label = __('Search');
-        $HTML .= <<<HTML
-            <form name="search" action="{$this->formUrl}" id="search" method="get" class="form-inline">{$label}
-                <input type="text" name="keywords" class="form-control col-md-3"/>
-                <input type="submit" id="doSearch" value="{$label}"class="s-btn btn btn-default"/>
-                {$this->customField}
-            </form>
-        HTML; 
-
+        if (!$this->disableForm)
+        {
+            $label = __('Search');
+            $HTML .= <<<HTML
+                <form name="search" action="{$this->formUrl}" id="search" method="get" class="form-inline">{$label}
+                    <input type="text" name="keywords" class="form-control col-md-3"/>
+                    <input type="submit" id="doSearch" value="{$label}"class="s-btn btn btn-default"/>
+                    {$this->customField}
+                </form>
+            HTML; 
+        }
+        
         /* End Subsection */
         $HTML .= '</div>';
 

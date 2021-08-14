@@ -20,6 +20,9 @@ if (!defined('SB')) {
     require SB.'admin/default/session.inc.php';
 }
 
+// Module name
+define('MODULE_NAME', 'asset');
+
 // IP based access limitation
 require LIB . 'ip_based_access.inc.php';
 // set dependency
