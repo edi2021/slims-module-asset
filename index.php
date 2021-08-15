@@ -22,6 +22,8 @@ if (!defined('SB')) {
 
 // Module name
 define('MODULE_NAME', 'asset');
+// Module version
+define('MODULE_VERSION', '1.0.0-Beta-1');
 
 // IP based access limitation
 require LIB . 'ip_based_access.inc.php';
@@ -39,6 +41,9 @@ require __DIR__ . DS . 'asset.helper.php';
 // autoload
 require __DIR__ . DS . 'autoload.php';
 // end dependency
+
+// table check
+tableCheck();
 
 // call namespace
 use SLiMSAssetmanager\Http\{Parse,Response};

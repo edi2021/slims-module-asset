@@ -19,5 +19,7 @@ require __DIR__ . DS . 'asset.helper.php';
 require __DIR__ . DS . 'autoload.php';
 // end dependency
 
+tableCheck();
+
 // Tools
 SLiMSAssetmanager\Handler\Tool::getContent($_GET['name']);

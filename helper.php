@@ -86,3 +86,21 @@ function setData($Key, $Data, $Callback = '')
      return $Data[$Key];
   }
 }
+
+function tableCheck()
+{
+  $DB = SLiMS\DB::getInstance();
+
+  $Check = $DB->query("show tables like 'asset_%'");
+
+  if ($Check->rowCount() < 10)
+  {
+    $Seed = __DIR__ . DS . 'lib' . DS .'Migration' . DS . 'Seed';
+    $Engine = SLiMSAssetmanager\Migration\Engine::ignite($Seed);
+
+    $Engine->pullClutch()->openThrottle();
+
+    simbioRedirect($_SERVER['PHP_SELF']);
+    exit;
+  }
+}
