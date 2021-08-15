@@ -69,7 +69,7 @@ class editItemAsset extends addAsset
             ['addAnything' => ['Kode Item', '<b>'.setData('itemcode', $Data).'</b>']],
             ['addAnything' => ['Lokasi', FE::selectList('locationid', self::getRawOptions(__('Location'), 'location_id, location_name', 'mst_location'), setData('locationid', $Data), 'class="form-control col-4"')]],
             ['addAnything' => ['Penempatan', FE::textField('text', 'placedetail', setData('placedetail', $Data), 'class="form-control col-4"')]],
-            ['addAnything' => ['Status', FE::selectList('deleted', [['0', 'Ada'], ['1', 'Di Hapus']], setData('deleted', $Data), 'class="form-control col-4"')]],
+            ['addAnything' => ['Status', FE::selectList('deleted', [['1', 'Ada'], ['2', 'Di Hapus']], setData('deleted', $Data), 'class="form-control col-4"')]],
             ['addAnything' => ['Sumber', FE::selectList('source', [['1', __('Buy')], ['2', __('Prize/Grant')]], setData('source', $Data), 'class="form-control col-4"')]],
             ['addAnything' => ['Tanggal Order', FE::dateField('orderdate', setData('orderdate', $Data), 'class="form-control"')]],
             ['addAnything' => ['Tanggal Diterima', FE::dateField('receivedate', setData('receivedate', $Data), ' class="form-control col-12"')]],

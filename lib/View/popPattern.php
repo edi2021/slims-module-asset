@@ -14,15 +14,16 @@ use \simbio_form_element as FE;
 
 class popPattern
 {
-    public static function setPreview()
+    public static function setPreview($Data = ['BR','I', 5])
     {
+        $Zero = sprintf('%0' . $Data[2] . 'd', 0);
         $HTML = <<<HTML
             <strong>Pratinjau</strong>
             <div class="w-full p-2 bg-primary font-bold">
                 <h3 id="result" class="block text-center text-white">
-                    <b id="prefPrev">BR</b>
-                    <b id="numPrev">00000</b>
-                    <b id="sufPrev">I</b>
+                    <b id="prefPrev">{$Data[0]}</b>
+                    <b id="numPrev">{$Zero}</b>
+                    <b id="sufPrev">{$Data[1]}</b>
                 </h3>
             </div>
         HTML;
@@ -58,8 +59,9 @@ class popPattern
         return $JS;
     }
 
-    public static function render()
+    public static function render($Data = [])
     {
+        $Pattern = (count($Data)) ? $Data['data'] : [];
         // Set form instance
         $Form = new Form('itemForm', $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'], 'post');
 
@@ -74,9 +76,9 @@ class popPattern
         $fields = [
             ['addHidden' => ['handler', 'Record']],
             ['addHidden' => ['method', 'savePattern']],
-            ['addTextField' => ['text', 'prefix', 'Awalan' . '*', 'BR', 'class="form-control" onkeyup="setPreview(this, 0)"', 'Isikan awalan']],
-            ['addTextField' => ['text', 'suffix', 'Akhiran' . '*', 'I', 'class="form-control" onkeyup="setPreview(this, 1)"', 'Isikan akhiran']],
-            ['addTextField' => ['text', 'numLong', 'Panjang nomor seri	' . '*', '5', 'class="form-control" onkeyup="setPreview(this, 2)"', 'Isikan Panjang nomor seri	']]
+            ['addTextField' => ['text', 'prefix', 'Awalan' . '*', setData(0, $Pattern) ?? 'BR', 'class="form-control" onkeyup="setPreview(this, 0)"', 'Isikan awalan']],
+            ['addTextField' => ['text', 'suffix', 'Akhiran' . '*', setData(1, $Pattern) ?? 'I', 'class="form-control" onkeyup="setPreview(this, 1)"', 'Isikan akhiran']],
+            ['addTextField' => ['text', 'numLong', 'Panjang nomor seri	' . '*', setData(2, $Pattern) ?? '5', 'class="form-control" onkeyup="setPreview(this, 2)"', 'Isikan Panjang nomor seri	']]
         ];
 
         // register property
@@ -92,7 +94,7 @@ class popPattern
         }
 
         // set preview
-        echo self::setPreview();
+        echo self::setPreview($Pattern);
 
         // make form
         echo $Form->printOut();

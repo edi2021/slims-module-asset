@@ -100,7 +100,7 @@ class addAsset
             'codeList' => FE::selectList('itemCodePattern', self::getPattern(), '', 'class="form-control col"'),
             'locationList' => FE::selectList('locationid', self::getRawOptions(__('Location'), 'location_id, location_name', 'mst_location'), '', 'class="form-control col-4"') . '</div>',
             'itemSite' => FE::textField('text', 'placedetail', '', 'class="form-control col-4"') . '</div>',
-            'itemStatus' => FE::selectList('itemStatusID', [['1', 'Ada'], ['0', 'Di Hapus']], '', 'class="form-control col-4"') . '</div> ',
+            'itemStatus' => FE::selectList('itemStatusID', [['1', 'Ada'], ['2', 'Di Hapus']], '', 'class="form-control col-4"') . '</div> ',
             'source' => FE::selectList('source', [['1', __('Buy')], ['2', __('Prize/Grant')]], '', 'class="form-control col-4"') . '</div> ',
             'orderDate' => FE::dateField('orderdate', date('Y-m-d'), 'class="form-control"') . '</div>',
             'recvDate' => FE::dateField('receivedate', date('Y-m-d'), ' class="form-control col-12"') . '</div>',

@@ -42,7 +42,7 @@ class itemList
 
         $Grid = new Grid(DB::getInstance('mysqli'), $props, 20);
         $Grid->canEdit = (!is_null($isDeleteList) ? false : true);
-        $Grid->setSQLCriteria('deleted = ' . (!is_null($isDeleteList) ? 1 : 0));
+        $Grid->setSQLCriteria('deleted = ' . (!is_null($isDeleteList) ? 2 : 1));
 
         if (!$Grid->canEdit) $Grid->invisible_fields = [0];
 

@@ -17,6 +17,26 @@ function mutationZeroItem($DB, $Data)
     return $Data[0] . '&handler=Record&method=EditData&view=editItemAsset';
 }
 
+function mutationMstAuthorization($DB, $Data)
+{
+    return $Data[0] . '&handler=Master&method=EditDataMaster&view=masterAuthorization';
+}
+
+function mutationMstSource($DB, $Data)
+{
+    return $Data[0] . '&handler=Master&method=EditDataMaster&view=masterSource';
+}
+
+function mutationMstCondition($DB, $Data)
+{
+    return $Data[0] . '&handler=Master&method=EditDataMaster&view=masterCondition';
+}
+
+function mutationMstStatus($DB, $Data)
+{
+    return $Data[0] . '&handler=Master&method=EditDataMaster&view=masterStatus';
+}
+
 
 function mutationSetItemLabel($DB, $Data)
 {
