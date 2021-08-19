@@ -74,7 +74,7 @@ trait Seed
             CREATE TABLE IF NOT EXISTS `asset_item` (
             `id` int(11) NOT NULL AUTO_INCREMENT,
             `assetid` int(11) NOT NULL DEFAULT 0,
-            `itemcode` varchar(256) COLLATE utf8mb4_bin DEFAULT NULL,
+            `itemcode` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
             `locationid` varchar(20) COLLATE utf8mb4_bin DEFAULT NULL,
             `placedetail` text COLLATE utf8mb4_bin DEFAULT NULL,
             `source` int(11) NOT NULL DEFAULT 0,
