@@ -87,7 +87,7 @@ trait Seed
             `conditionid` int(11) NOT NULL DEFAULT 0,
             `price` int(11) NOT NULL DEFAULT 0,
             `pricecurrency` varchar(20) COLLATE utf8mb4_bin DEFAULT NULL,
-            `deleted` int(11) NOT NULL DEFAULT 2,
+            `deleted` int(11) NOT NULL DEFAULT 1,
             `inputdate` datetime DEFAULT NULL,
             `lastupdate` datetime DEFAULT NULL,
             `deleteddate` datetime DEFAULT NULL,

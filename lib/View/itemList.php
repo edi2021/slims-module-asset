@@ -26,7 +26,7 @@ class itemList
         }
 
         $Box
-            ->setTitle('Item Asset Perpustakaan')
+            ->setTitle('Item Asset Perpustakaan ' . ((!is_null($isDeleteList)) ? 'Terhapus' : NULL))
             ->setActionButton([
                     ['url' => $_SERVER['PHP_SELF'] . '?view=itemList' . $isDeleteList, 'label' => 'Daftar Item Asset', 'class' => 'btn btn-primary']
                 ])

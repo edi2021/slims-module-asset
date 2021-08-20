@@ -202,7 +202,7 @@ class Record
         }
 
         // Set last insert id
-        $LastInsertId = (isset($_POST['id'])) ? $Dbs->escape_string($_POST['id']) : $Dbs->escape_string($Builder->insert_id);
+        $LastInsertId = (isset($_POST['id']) && $_POST['id'] > 0) ? $Dbs->escape_string($_POST['id']) : $Dbs->escape_string($Builder->insert_id);
 
         // Get pattern data
         $Pattern = $Dbs->query("SELECT * FROM `setting`WHERE setting_name = 'assetPattern'");

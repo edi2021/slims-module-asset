@@ -14,7 +14,7 @@ use \simbio_form_element as FE;
 
 class popPattern
 {
-    public static function setPreview($Data = ['BR','I', 5])
+    public static function setPreview($Data)
     {
         $Zero = sprintf('%0' . $Data[2] . 'd', 0);
         $HTML = <<<HTML
@@ -61,7 +61,7 @@ class popPattern
 
     public static function render($Data = [])
     {
-        $Pattern = (count($Data)) ? $Data['data'] : [];
+        $Pattern = (count($Data)) ? $Data['data'] : ['BR','I', 5];
         // Set form instance
         $Form = new Form('itemForm', $_SERVER['PHP_SELF'] . '?' . $_SERVER['QUERY_STRING'], 'post');
 

@@ -14,18 +14,22 @@ use \simbio_form_element as FE;
 use SLiMSAssetmanager\Ui\Box;
 use SLiMS\DB;
 use SLiMSAssetmanager\View\addAsset;
+use SLiMSAssetmanager\Http\Parse;
 
 class editItemAsset extends addAsset
 {   
     private static function getData()
     {
         $Result = [];
-        if (isset($_POST['itemID']))
+        $Id = Parse::fetchKey('itemID');
+
+
+        if (!is_null($Id))
         {
             $Builder = DB::getInstance();
 
             $Process = $Builder->prepare('select * from asset_item where itemcode = :itemcode');
-            $Process->execute(['itemcode' => $_POST['itemID']]);
+            $Process->execute(['itemcode' => $Id]);
 
             $Result = $Process->fetch(\PDO::FETCH_ASSOC);
         }
@@ -50,6 +54,10 @@ class editItemAsset extends addAsset
                         ['url' => $_SERVER['PHP_SELF'] . '?view=itemList', 'label' => 'Daftar Item Asset', 'class' => 'btn btn-primary']
                     ])
                 ->make();
+        }
+        else
+        {
+            ob_start();
         }
 
         // set Form instance
@@ -104,5 +112,13 @@ class editItemAsset extends addAsset
 
         // make form
         echo $Form->printOut();
+
+        if (isset($_GET['inPopUp']))
+        {
+            // set content
+            $content = ob_get_clean();
+            // include the page template
+            require __DIR__ .'/../Template/inIframe.tpl.php';
+        }
     }
 }

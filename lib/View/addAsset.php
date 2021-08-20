@@ -191,6 +191,21 @@ class addAsset
         return $HTML;
     }
 
+    private static function itemList($Id = 0)
+    {
+        $iframeSrc = $_SERVER['PHP_SELF'] . '?handler=Iframe&method=list&view=listItem&id=' . $Id;
+
+        $HTML = '';
+        if ($Id > 0)
+        {
+            $HTML = <<<HTML
+                <iframe name="attachIframe" id="itemIframe" class="form-control" style="width: 100%; height: 100px;" src="{$iframeSrc}"></iframe>';
+            HTML;
+        }
+
+        return $HTML;
+    }
+
     protected static function image()
     {
         return FE::textField('file', 'image', '');
@@ -222,7 +237,7 @@ class addAsset
             ['addTextField' => ['textarea', 'name', 'Nama Barang' . '*', setData('name', $Data), 'rows="1" class="form-control"', 'Isikan nama barang yang hendak di record']],
             ['addSelectList' => ['typeid', 'Jenis Barang', self::getOptions('asset_type'), setData('typeid', $Data), 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_type" data-src-cols="id:name"', 'Jenis barang']],
             ['addSelectList' => ['markid', 'Merek', self::getOptions('asset_mark'), setData('markid', $Data), 'class="select2" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_mark" data-src-cols="id:name"', 'Jenis barang']],
-            ['addAnything' => ['Nomor QR Code', self::setItems($Data)]],
+            ['addAnything' => ['Nomor QR Code', self::setItems($Data) . self::itemList(setData('id', $Data))]],
             ['addSelectList' => ['authorizationid', 'Penguasaan', self::getOptions('asset_authorization'), setData('authorizationid', $Data), 'class="select2 form-control" style="width: 25%" data-src="' .$_SERVER['PHP_SELF'] . '?format=json&allowNew=true" data-src-table="Ajax::asset_authorization" data-src-cols="id:name"', 'Jenis barang']],
             ['addAnything' => ['Dokumen Terkait', self::attachment($Data)]],
             ['addAnything' => ['Foto', self::image()]],
