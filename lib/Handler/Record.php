@@ -11,6 +11,7 @@ namespace SLiMSAssetmanager\Handler;
 
 // Load dependency
 use SLiMSAssetmanager\Http\Parse;
+use SLiMSAssetmanager\Ui\Html;
 use SLiMS\DB;
 use \simbio_dbop as Builder;
 use \simbio_file_upload as Upload;
@@ -276,12 +277,8 @@ class Record
         if (empty($Builder->error))
         {
             \utility::jsAlert('Pola berhasil disimpan.');
-            echo <<<HTML
-                <script>
-                    let select = parent.document.querySelector('#itemCodePattern')
-                    select.innerHTML += '<option value="{$label}">{$label}</option>'
-                </script>
-            HTML;
+            Html::js('let select = parent.document.querySelector(\'#itemCodePattern\')
+            select.innerHTML += \'<option value="' . $label . '">' . $label .'</option>\'');
         }
         else
         {
@@ -343,13 +340,7 @@ class Record
             // }
 
             \Utility::jsAlert('Data berhasil diupload dan disimpan');
-            echo <<<HTML
-                <script>
-                    let doc = parent.parent.document
-                    doc.querySelector('#cboxClose').click()
-                    doc.querySelector('#attachIframe').contentWindow.location.reload()
-                </script>
-            HTML;
+            Html::js("let doc = parent.parent.document;doc.querySelector('#cboxClose').click();doc.querySelector('#attachIframe').contentWindow.location.reload()");
         }
         else
         {

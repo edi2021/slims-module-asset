@@ -11,52 +11,48 @@ namespace SLiMSAssetmanager\View;
 
 use \simbio_form_table_AJAX as Form;
 use \simbio_form_element as FE;
+use SLiMSAssetmanager\Ui\Html;
 
 class popPattern
 {
     public static function setPreview($Data)
     {
         $Zero = sprintf('%0' . $Data[2] . 'd', 0);
-        $HTML = <<<HTML
-            <strong>Pratinjau</strong>
-            <div class="w-full p-2 bg-primary font-bold">
-                <h3 id="result" class="block text-center text-white">
-                    <b id="prefPrev">{$Data[0]}</b>
-                    <b id="numPrev">{$Zero}</b>
-                    <b id="sufPrev">{$Data[1]}</b>
-                </h3>
-            </div>
-        HTML;
+        Html::$writeMode = 'return';
+        $HTML = Html::write('strong', 'Pratinjau') . 
+                Html::write('div', 
+                    Html::write('h3', 
+                        Html::write('b', $Data[0], ['id' => 'prefPrev']) .
+                        Html::write('b', $Zero, ['id' => 'numPrev']) .
+                        Html::write('b', $Data[1], ['id' => 'sufPrev'])
+                    ,['id' => 'result', 'class' => 'block text-center text-white'])
+                ,['class' => 'w-full p-2 bg-primary font-bold']);
 
         return $HTML;
     }
 
     public static function js()
     {
-        $JS = <<<HTML
-            <script>
-                async function setPreview(e, id)
-                {
-                    switch (id) {
-                        case 0:
-                            document.querySelector('#prefPrev').innerHTML = e.value
-                            break;
-                        case 1:
-                            document.querySelector('#sufPrev').innerHTML = e.value
-                            break;
-                        default:
-                            let zero = '';
-                            for (let idx = 0; idx < e.value; idx++) {
-                                zero += '0'
-                            }
-                            document.querySelector('#numPrev').innerHTML = zero
-                            break;
-                    }
-                }
-            </script>
-        HTML;
+        Html::$writeMode = 'return';
 
-        return $JS;
+        return Html::write('script', "async function setPreview(e, id)
+        {
+            switch (id) {
+                case 0:
+                    document.querySelector('#prefPrev').innerHTML = e.value
+                    break;
+                case 1:
+                    document.querySelector('#sufPrev').innerHTML = e.value
+                    break;
+                default:
+                    let zero = '';
+                    for (let idx = 0; idx < e.value; idx++) {
+                        zero += '0'
+                    }
+                    document.querySelector('#numPrev').innerHTML = zero
+                    break;
+            }
+        }");
     }
 
     public static function render($Data = [])

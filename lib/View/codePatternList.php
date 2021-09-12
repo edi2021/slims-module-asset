@@ -10,7 +10,7 @@
 namespace SLiMSAssetmanager\View;
 
 use \simbio_table as ReportTable;
-use SLiMSAssetmanager\Ui\Box;
+use SLiMSAssetmanager\Ui\{Box,Html};
 use SLiMSAssetmanager\View\popPattern;
 use SLiMS\DB;
 
@@ -87,11 +87,11 @@ class codePatternList extends popPattern
 
             foreach ($PatternDatas as $PatternData) {
                 $Result['<b>' . $PatternData['label'] . '</b>'] = function() use($PatternData) {
-                    return <<<HTML
-                        <b>Prefix </b> : {$PatternData['data'][0]}<br/>
-                        <b>Suffix </b> : {$PatternData['data'][1]}<br/>
-                        <b>Panjang Nomor </b> : {$PatternData['data'][2]}<br/>
-                    HTML;
+                    Html::$writeMode = 'return';
+                    return 
+                            Html::write('b', 'Prefix') . ':' . $PatternData['data'][0] . '&nbsp;' .
+                            Html::write('b', 'Suffix') . ':' . $PatternData['data'][1] . '&nbsp;' . 
+                            Html::write('b', 'Panjang Nomor') . ':' . $PatternData['data'][2] . '&nbsp;';
                 };
             }
         }
@@ -100,9 +100,9 @@ class codePatternList extends popPattern
         $row = 1;
         foreach ($Result as $Label => $value) {
             $id = strip_tags($Label);
-            $Edit = <<<HTML
-                <a class="editLink" href="/s94/admin/modules/asset/index.php?view=codePatternList&addForm=true&id={$id}" title="Edit"></a>
-            HTML;
+            Html::$writeMode = 'return';
+            $Edit = Html::write('a', '', ['class' => 'editLink', 'href' => AWB . 'modules/asset/index.php?view=codePatternList&addForm=true&id='.$id, 'title' => 'Edit']);
+
             $Report->appendTableRow([$Label, (is_callable($value)) ? $value() : $value, $Edit]);
             // set cell attribute
             $Report->setCellAttr($row, 0, 'class="alterCell" valign="top" style="max-width: 10px; width: auto"');

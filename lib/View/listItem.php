@@ -11,6 +11,7 @@ namespace SLiMSAssetmanager\View;
 
 use \simbio_form_table_AJAX as Form;
 use \simbio_form_element as FE;
+use SLiMSAssetmanager\Ui\Html;
 use SLiMS\DB;
 
 class listItem
@@ -41,20 +42,19 @@ class listItem
     public static function render()
     {
         ob_start();
+        Html::$writeMode = 'return';
         $HTML = '<div class="w-full">';
         foreach ((count(self::getData())) ? self::getData() : [] as $index => $data) {
             $editUrl = $_SERVER['PHP_SELF'] . '?handler=Modal&method=popUp&view=editItemAsset&inPopUp=true&itemID=' . $data['id'];
-            $HTML .= <<<HTML
-                <div class="row">
-                    <div class="col-3 my-2">
-                        <a href="{$editUrl}" width="780" height="500" class="btn btn-primary mx-auto block notAJAX openPopUp mr-2" title="Edit data barang">Edit</a>
-                        <a href="#" class="btn btn-danger mx-auto block">Delete</a>
-                    </div>
-                    <div class="col-9 my-3">
-                        {$data['itemcode']}
-                    </div>
-                </div>
-            HTML;
+            $HTML .= Html::write('div', 
+                    Html::write('div', 
+                        Html::write('a', 'Edit', ['href' => $editUrl, 'width' => 780, 'height' => 500, 'class' => 'btn btn-primary mx-auto block notAJAX openPopUp mr-2', 'title' => 'Edit data barang']) .
+                        Html::write('a', 'Hapus', ['href' => '#', 'class' => 'btn btn-danger mx-1 block'])
+                    ,['class' => 'col-3 my-2']) . 
+                    Html::write('div', 
+                        $data['itemcode']
+                    ,['class' => 'col-9 my-3'])
+                ,['class' => 'row']);
         }
         $HTML .= '</div>';
 

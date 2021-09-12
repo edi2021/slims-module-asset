@@ -13,7 +13,7 @@ namespace SLiMSAssetmanager\View;
 use \simbio_form_table_AJAX as Form;
 use \simbio_form_element as FE;
 use SLiMS\DB;
-use SLiMSAssetmanager\Ui\Box;
+use SLiMSAssetmanager\Ui\{Box,Html};
 
 class addAsset
 {
@@ -33,9 +33,9 @@ class addAsset
 
         if ($Form->edit_mode)
         {
-            echo '<div class="s-alert infoBox">'
-            . __('You are going to edit biblio data') . ' : <b>' . $Data['name'] . '</b>  <br />' . __('Last Updated') . '&nbsp;' . date('d F Y h:i:s', strtotime($Data['lastupdate']));
-            echo '</div>';
+            $Slot = __('You are going to edit biblio data') . ' : <b>' . $Data['name'] . '</b>  <br />' . __('Last Updated') . '&nbsp;' . date('d F Y h:i:s', strtotime($Data['lastupdate']));
+            Html::$writeMode = 'output';
+            Html::write('div', $Slot, ['class' => 's-alert infoBox']);
         }
     }
 
@@ -134,37 +134,30 @@ class addAsset
 
         extract($translate);
 
-        $item = <<<HTML
-            <div class="form-inline">
-                {$codeList}&nbsp;
-                <input type="text" class="form-control col-4" name="totalItems" placeholder="{$totalItemsTrans}" />&nbsp;
-                <div class="{$visibility}"><div class="bnt btn-group"><div class="btn btn-info" data-toggle="collapse" data-target="#batchItemDetail" aria-expanded="false" aria-controls="batchItemDetail">{$optionsTrans}</div>
-                <a href="{$popPattern}" height="420px" class="s-btn btn btn-default notAJAX openPopUp notIframe"  title="{$addNewPatternTrans}">{$addNewPatternTrans}</a></div></div>
-                <div class="collapse" id="batchItemDetail" style="padding:10px;width:100%; text-align:left !important;">
-                <div class="form-group divRow p-1"><div class="col-3">{$locationTrans}'</div>
-                {$locationList}
-                <div class="form-group divRow p-1"><div class="col-3">{$shelLocationTrans}</div>
-                {$itemSite}
-                <div class="form-group divRow p-1"><div class="col-3">{$ItemStatusTrans}</div>
-                {$itemStatus}
-                <div class="form-group divRow p-1"><div class="col-3">{$SourceTrans}</div>
-                {$source}
-                <div class="form-group divRow p-1"><div class="col-3">{$OrderDateTrans}</div>
-                {$orderDate}
-                <div class="form-group divRow p-1"><div class="col-3">{$ReceivingDateTrans}</div>
-                {$recvDate}
-                <div class="form-group divRow p-1"><div class="col-3">{$OrderNumberTrans}</div>
-                {$ordNo}
-                <div class="form-group divRow p-1"><div class="col-3">{$InvoiceTrans}</div>
-                {$invoice}                
-                <div class="form-group divRow p-1"><div class="col-3">{$InvoiceDateTrans}</div>
-                {$invoceDate}
-                <div class="form-group divRow p-1"><div class="col-3">{$SupplierTrans}</div>
-                {$supplier}
-                <div class="form-group divRow p-1"><div class="col-3">{$PriceTrans}</div>
-                {$price}
-            </div>
-        HTML;
+        Html::$writeMode = 'return';
+        $item = Html::write('div',
+            $codeList .
+            Html::write('input', '', ['class' => 'form-control col-4', 'name' => 'totalItems', 'placeholder' => $totalItemsTrans]) .
+            Html::write('div', 
+                Html::write('div',
+                    Html::write('div', $optionsTrans, ['class' => 'btn btn-info', 'data-toggle' => 'collapse', 'data-target' => '#batchItemDetail', 'aria-expanded'  => 'false', 'aria-controls' => 'batchItemDetail']) .
+                    Html::write('a', $addNewPatternTrans, ['href' => $popPattern, 'height' => '420px', 'class' => 's-btn btn btn-default notAJAX openPopUp notIframe',  'title' => $addNewPatternTrans])
+                ,['class' => 'btn btn-group'])
+            ,['class' => $visibility]) .
+            Html::write('div',
+                '<div class="form-group divRow p-1"><div class="col-3">' . $locationTrans . '</div>'. $locationList .'
+                <div class="form-group divRow p-1"><div class="col-3">'.$shelLocationTrans.'</div>'.$itemSite.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$ItemStatusTrans.'</div>'.$itemStatus.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$SourceTrans.'</div>'.$source.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$OrderDateTrans.'</div>'.$orderDate.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$ReceivingDateTrans.'</div>'.$recvDate.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$OrderNumberTrans.'</div>'.$ordNo.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$InvoiceTrans.'</div>'.$invoice.'                
+                <div class="form-group divRow p-1"><div class="col-3">'.$InvoiceDateTrans.'</div>'.$invoceDate.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$SupplierTrans.'</div>'.$supplier.'
+                <div class="form-group divRow p-1"><div class="col-3">'.$PriceTrans.'</div>'. $price
+            ,['class' => 'collapse', 'id' => 'batchItemDetail', 'style' => 'padding:10px;width:100%; text-align:left !important;'])
+        ,['class' => 'form-inline']);
 
         return $item;
     }
@@ -183,10 +176,15 @@ class addAsset
         $label = __('Add Attachment');
         $titleLabel = __('File Attachments');
 
-        $HTML = <<<HTML
-            <div class="{$visibility}"><a class="s-btn btn btn-default notAJAX openPopUp" href="{$href}" width="780" height="500" title="{$titleLabel}">{$label}</a></div>';
-            <iframe name="attachIframe" id="attachIframe" class="form-control" style="width: 100%; height: 100px;" src="{$iframeSrc}"></iframe>';
-        HTML;
+        Html::$writeMode = 'return';
+        $HTML = Html::write('div',
+                    Html::write('a', 
+                        $label
+                    ,['class' => 's-btn btn btn-default notAJAX openPopUp', 'href' => $href, 'width' => 780, 'height' => 500, 'title' => $titleLabel])
+                ,['class' => $visibility]) .
+                Html::write('iframe',
+                    ''
+                ,['name' => "attachIframe", 'id' => "attachIframe", 'class' => "form-control", 'style' => "width: 100%; height: 100px;", 'src' => $iframeSrc]);
 
         return $HTML;
     }
@@ -198,9 +196,7 @@ class addAsset
         $HTML = '';
         if ($Id > 0)
         {
-            $HTML = <<<HTML
-                <iframe name="attachIframe" id="itemIframe" class="form-control" style="width: 100%; height: 100px;" src="{$iframeSrc}"></iframe>';
-            HTML;
+            $HTML = Html::write('iframe', '', ['name' => 'attachIframe', 'id' => 'itemIframe', 'class' => 'form-control', 'style' => 'width: 100%; height: 100px;', 'src' => $iframeSrc]);
         }
 
         return $HTML;

@@ -12,6 +12,7 @@ namespace SLiMSAssetmanager\View;
 use \simbio_form_table_AJAX as Form;
 use \simbio_form_element as FE;
 use SLiMS\DB;
+use SLiMSAssetmanager\Ui\Html;
 
 class listAttach
 {
@@ -54,17 +55,14 @@ class listAttach
         $HTML = '<div class="w-full">';
         foreach ((count($_SESSION['assetFile'])) ? $_SESSION['assetFile'] : [] as $index => $data) {
             $editUrl = $_SERVER['PHP_SELF'] . '?handler=Modal&method=popUp&view=popAttach&id=' . $data['id'];
-            $HTML .= <<<HTML
-                <div class="row">
-                    <div class="col-3 my-2">
-                        <a href="{$editUrl}" width="780" height="500" class="btn btn-primary mx-auto block notAJAX openPopUp" title="Edit data barang">Edit</a>
-                        <a href="#" class="btn btn-danger mx-auto block">Delete</a>
-                    </div>
-                    <div class="col-9 my-3">
-                        {$data['filename']}
-                    </div>
-                </div>
-            HTML;
+            Html::$writeMode = 'return';
+            $HTML = Html::write('div', 
+                        Html::write('div', 
+                            '<a href="'.$editUrl.'" width="780" height="500" class="btn btn-primary mx-auto block notAJAX openPopUp" title="Edit data barang">Edit</a> ' .
+                            '<a href="#" class="btn btn-danger mx-auto block">Delete</a>'
+                        ,['class' => 'col-3 my-2']) . 
+                        Html::write('div', $data['filename'], ['class' => 'col-9 my-3'])
+                    ,['class' => 'row']);
         }
         $HTML .= '</div>';
 
