@@ -23,7 +23,7 @@ function httpQuery(array $data = [])
 
 function isClassExists(string $className)
 {
-   return class_exists('SLiMSAssetmanager\\' . basename($className));
+   return class_exists('SLiMSAssetmanager\\' . $className);
 }
 
 function getOptionsId($dbs, $table, $criteria)
